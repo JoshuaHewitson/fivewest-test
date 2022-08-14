@@ -90,6 +90,14 @@ class DRINKS_API extends apollo_datasource_rest_1.RESTDataSource {
             return data.drinks;
         });
     }
+    getDrink(drinkId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const data = yield this.get(`lookup.php`, {
+                i: drinkId
+            });
+            return data.drinks[0];
+        });
+    }
     getDrinkDetails(drinkId) {
         return __awaiter(this, void 0, void 0, function* () {
             const data = yield this.get(`lookup.php`, {

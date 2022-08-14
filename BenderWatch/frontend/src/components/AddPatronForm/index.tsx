@@ -1,11 +1,11 @@
-import { Button, Dialog } from '@mui/material'
+import { Button, CircularProgress, Dialog } from '@mui/material'
 import { baseColors, gradient, Metrics } from '../../themes'
 import Typography, { Display, Heading, Subheading } from '../Typography'
 import { Formik } from 'formik'
 import * as Yup from 'yup'
 import CustomTextField from '../styledMui/CustomTextField'
-import { FC } from 'react'
-import { Patron } from '../../containers'
+import { FC, useState } from 'react'
+import { useCreatePatron } from '../../graphql/mutations/useCreatePatron'
 
 const validationSchema = () => {
   return Yup.object().shape({
@@ -16,15 +16,11 @@ const validationSchema = () => {
 
 interface AddPatronFormProps {
   handleClose: Function
-  setPatrons: Function
-  patrons: Array<Patron>
 }
 
-const AddPatronForm: FC<AddPatronFormProps> = ({
-  handleClose,
-  setPatrons,
-  patrons
-}) => {
+const AddPatronForm: FC<AddPatronFormProps> = ({ handleClose }) => {
+  const [submitting, setSubmitting] = useState(false)
+  const [createPatron] = useCreatePatron()
   return (
     <div
       style={{
@@ -40,8 +36,18 @@ const AddPatronForm: FC<AddPatronFormProps> = ({
         </Typography>
         <Formik
           onSubmit={(values) => {
-            setPatrons([...patrons, { ...values }])
-            handleClose()
+            setSubmitting(true)
+            typeof createPatron === 'function' &&
+              createPatron({
+                variables: { ...values, weight: Number(values.weight) }
+              })
+                .then(() => {
+                  setSubmitting(false)
+                  handleClose()
+                })
+                .catch(() => {
+                  setSubmitting(false)
+                })
           }}
           initialValues={{
             name: '',
@@ -49,14 +55,7 @@ const AddPatronForm: FC<AddPatronFormProps> = ({
           }}
           validationSchema={validationSchema}
         >
-          {({
-            values,
-            setFieldValue,
-            errors,
-            isSubmitting,
-            isValid,
-            handleSubmit
-          }) => (
+          {({ values, setFieldValue, errors, isValid, handleSubmit }) => (
             <>
               <CustomTextField
                 style={{ width: '100%', marginBottom: Metrics.base * 2 }}
@@ -80,7 +79,10 @@ const AddPatronForm: FC<AddPatronFormProps> = ({
                 variant='contained'
                 onClick={() => handleSubmit()}
                 disabled={
-                  !isValid || values.name === '' || values.weight === ''
+                  !isValid ||
+                  values.name === '' ||
+                  values.weight === '' ||
+                  submitting
                 }
                 style={{
                   opacity: !isValid ? 0.4 : 1,
@@ -88,9 +90,13 @@ const AddPatronForm: FC<AddPatronFormProps> = ({
                   background: gradient
                 }}
               >
-                <Typography color={baseColors.background}>
-                  <b>Add Patron</b>
-                </Typography>
+                {submitting ? (
+                  <CircularProgress style={{ color: baseColors.background }} />
+                ) : (
+                  <Typography color={baseColors.background}>
+                    <b>Add Patron</b>
+                  </Typography>
+                )}
               </Button>
             </>
           )}

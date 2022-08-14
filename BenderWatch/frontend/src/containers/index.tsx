@@ -1,23 +1,33 @@
 import { AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import PatronIdCard from '../components/PatronIdCard'
 import { baseColors, Metrics } from '../themes'
 import { motion } from 'framer-motion'
+import { usePatrons } from '../graphql/queries/usePatrons'
 
-export type Patron = {
-  name: string
-  weight: number
+/** update all alcohol levels
+ * by refetching patrons every minute
+ */
+const refetchInterval = 60000
+const updateAlcoholLevels = (refetch: any) => {
+  setTimeout(() => {
+    refetch()
+    updateAlcoholLevels(refetch)
+  }, refetchInterval)
 }
 
 const MainContainer = () => {
-  const [patrons, setPatrons] = useState<Array<Patron>>([
-    { name: 'josh', weight: 80 },
-    { name: 'Luke', weight: 400 },
-    { name: 'Kara', weight: 60 }
-  ])
+  const { data: patrons, loading, refetch } = usePatrons()
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  useEffect(() => {
+    setTimeout(() => {
+      refetch()
+      updateAlcoholLevels(refetch)
+    }, refetchInterval)
+  }, [])
 
+  console.log('selectedIndex', selectedIndex)
   return (
     <>
       <div
@@ -29,11 +39,12 @@ const MainContainer = () => {
           position: 'relative'
         }}
       >
-        <Header setPatrons={setPatrons} patrons={patrons} />
+        <Header />
         {selectedIndex && (
           <div
             style={{
               position: 'absolute',
+              zIndex: 10,
               top: 0,
               bottom: 0,
               left: 0,
@@ -57,6 +68,7 @@ const MainContainer = () => {
                     key={selectedIndex}
                     patron={patrons[selectedIndex - 1]}
                     expanded={true}
+                    handleClose={() => setSelectedIndex(null)}
                   />
                 </motion.div>
               )}
@@ -83,6 +95,7 @@ const MainContainer = () => {
                 key={selectedIndex}
                 patron={patron}
                 expanded={false}
+                handleClose={() => setSelectedIndex(null)}
               />
             </motion.div>
           ))}

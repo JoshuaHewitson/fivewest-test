@@ -1,17 +1,11 @@
 import { Button, Dialog } from '@mui/material'
 import { FC, useState } from 'react'
-import { Patron } from '../../containers'
 import { baseColors, gradient, Metrics } from '../../themes'
 import AddPatronForm from '../AddPatronForm'
 import Typography, { Display } from '../Typography'
 import logo from '../../themes/images/BenderWatch_logo.svg'
 
-interface HeaderProps {
-  setPatrons: Function
-  patrons: Array<Patron>
-}
-
-const Header: FC<HeaderProps> = ({ setPatrons, patrons }) => {
+const Header: FC = () => {
   const [addPatronOpen, setAddPatronOpen] = useState(false)
   return (
     <>
@@ -27,7 +21,6 @@ const Header: FC<HeaderProps> = ({ setPatrons, patrons }) => {
         }}
       >
         <img src={logo} alt='logo' style={{ height: 60 }}></img>
-        {/*<Display>BenderWatch</Display>*/}
         <Button
           variant='contained'
           onClick={() => setAddPatronOpen(true)}
@@ -52,11 +45,7 @@ const Header: FC<HeaderProps> = ({ setPatrons, patrons }) => {
           }
         }}
       >
-        <AddPatronForm
-          handleClose={() => setAddPatronOpen(false)}
-          setPatrons={setPatrons}
-          patrons={patrons}
-        />
+        <AddPatronForm handleClose={() => setAddPatronOpen(false)} />
       </Dialog>
     </>
   )

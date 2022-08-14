@@ -14,8 +14,8 @@ export type Drink = {
   id: string
   label: string
   thumb: string
-  ingredients: Array<Ingredient>
-  millilitersAlcohol: number
+  // ingredients: Array<Ingredient>
+  // millilitersAlcohol: number
 }
 const defaultValue: Drink | null = null
 
@@ -24,11 +24,6 @@ export const drinkFragment = gql`
     id: idDrink
     label: strDrink
     thumb: strDrinkThumb
-    ingredients {
-      name
-      milliliters
-    }
-    millilitersAlcohol
   }
 `
 
@@ -59,10 +54,7 @@ export const useDrink = ({ drinkId }: queryProps) => {
   const [data, setData] = useState(defaultValue)
   const [label, setLabel] = useState<string | null>(null)
   const [thumb, setThumb] = useState<string | null>(null)
-  const [ingredients, setIngredients] = useState<Array<Ingredient>>([])
-  const [millilitersAlcohol, setMillilitersAlcohol] = useState<number | null>(
-    null
-  )
+
   const { data: queryData, loading } = useQuery(QUERY, {
     variables: {
       drinkId
@@ -76,17 +68,12 @@ export const useDrink = ({ drinkId }: queryProps) => {
       setData(temp)
       setLabel(temp && temp.label ? temp.label : null)
       setThumb(temp && temp.thumb ? temp.thumb : null)
-      setIngredients(temp && temp.ingredients ? temp.ingredients : [])
-      setMillilitersAlcohol(
-        temp && temp.millilitersAlcohol ? temp.millilitersAlcohol : []
-      )
     } else {
       setData(defaultValue)
       setLabel(null)
       setThumb(null)
-      setIngredients([])
     }
   }, [queryData])
 
-  return { data, label, thumb, ingredients, millilitersAlcohol, loading }
+  return { data, label, thumb, loading }
 }

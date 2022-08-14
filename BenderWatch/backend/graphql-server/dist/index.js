@@ -15,9 +15,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const types_1 = __importDefault(require("./types"));
 const apolloServer_1 = __importDefault(require("./apolloServer"));
 const resolvers_1 = __importDefault(require("./resolvers"));
+const mongoose_1 = __importDefault(require("mongoose"));
 require('dotenv').config();
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    // await mongoose.connect('mongodb://localhost:27017/test');
+    yield mongoose_1.default.connect('mongodb://localhost:27017/test');
     (0, apolloServer_1.default)(types_1.default, resolvers_1.default);
 });
 startServer();

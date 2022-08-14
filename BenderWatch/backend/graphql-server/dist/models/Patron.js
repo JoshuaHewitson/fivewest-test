@@ -8,6 +8,6 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const patronSchema = new mongoose_1.default.Schema({
     name: String,
     weight: Number,
-    drinkIds: [String]
+    drinks: [{ drinkId: String, time: String, millilitersAlcohol: Number }]
 });
 exports.Patron = mongoose_1.default.model('Patron', patronSchema);

@@ -6,7 +6,7 @@ COPY package*.json ./
 
 RUN npm i
 
-COPY ./dist .
+COPY . .
 
 ENV PORT=8080
 

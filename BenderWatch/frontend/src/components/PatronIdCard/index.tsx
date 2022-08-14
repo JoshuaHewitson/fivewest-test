@@ -1,15 +1,17 @@
 import { Button } from '@mui/material'
 import { FC, useMemo, useState } from 'react'
-import { Patron } from '../../containers'
+import { useAddDrink } from '../../graphql/mutations/useAddDrink'
+import { useRemovePatron } from '../../graphql/mutations/useRemovePatron'
 import { Drink } from '../../graphql/queries/useDrink'
-import { DrinkListItem, useDrinks } from '../../graphql/queries/useDrinks'
+import { useDrinks } from '../../graphql/queries/useDrinks'
+import { Patron } from '../../graphql/queries/usePatrons'
 import { baseColors, gradient, Metrics } from '../../themes'
 import DrinkCard from '../DrinkCard'
 import CustomAutocomplete from '../styledMui/CustomAutocomplete'
 import CustomTextField from '../styledMui/CustomTextField'
-import Typography, { Display, Heading, Subheading } from '../Typography'
+import Typography, { Heading, Subheading } from '../Typography'
 
-const ListItem: FC<DrinkListItem> = ({ label, thumb }) => {
+const ListItem: FC<Drink> = ({ label, thumb }) => {
   return (
     <div
       style={{
@@ -61,14 +63,32 @@ export const OptionComponent = ({
 interface PatronIdCardProps {
   patron: Patron
   expanded: boolean
+  handleClose: Function
 }
 
-const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
+const getAlcoholLevelDescription = (alcoholLevel: number) => {
+  if (alcoholLevel > 80) return 'FULL BENDER!'
+  if (alcoholLevel > 60) return 'Wrecked'
+  if (alcoholLevel > 40) return 'Drunk'
+  if (alcoholLevel > 20) return 'Tipsy'
+  if (alcoholLevel > 5) return 'Light Buzz'
+  return 'Sober'
+}
+const maxAlcoholLevel = 100
+
+const PatronIdCard: FC<PatronIdCardProps> = ({
+  patron,
+  expanded,
+  handleClose
+}) => {
   const [selectedDrink, setSelectedDrink] = useState<Drink>()
   const [drinkInput, setDrinkInput] = useState('')
   const { data: cocktails, loading } = useDrinks()
-  const [drinksHistory, setDrinksHistory] = useState<Array<Drink>>([])
-
+  const [submitting, setSubmitting] = useState(false)
+  const [addDrink] = useAddDrink()
+  const [removePatron] = useRemovePatron()
+  const alert = patron?.alcoholLevel > 60
+  console.log('expanded', expanded)
   return (
     <div
       style={{
@@ -76,7 +96,8 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
         display: 'flex',
         flexDirection: 'column',
         padding: Metrics.base * 2,
-        borderRadius: Metrics.radius
+        borderRadius: Metrics.radius,
+        border: alert ? `2px solid ${baseColors.primary}` : 'none'
       }}
     >
       <div
@@ -87,9 +108,20 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
           marginBottom: Metrics.base
         }}
       >
-        <Heading>{patron.name}</Heading>
+        <Heading>{patron?.name}</Heading>
         {expanded ? (
-          <Button style={{}} onClick={() => {}}>
+          <Button
+            style={{}}
+            onClick={() => {
+              handleClose()
+              typeof removePatron === 'function' &&
+                removePatron({
+                  variables: {
+                    patronId: patron?.id
+                  }
+                })
+            }}
+          >
             <Typography color={baseColors.textSecondary}>
               <b>Remove Patron</b>
             </Typography>
@@ -98,9 +130,12 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
           <></>
         )}
       </div>
-      <Subheading mb={4}>Weight: {patron.weight}kg</Subheading>
-      <Typography mb={1} color={baseColors.textSecondary}>
-        Alcohol Level: <b>Tipsy</b>
+      <Subheading mb={4}>Weight: {patron?.weight}kg</Subheading>
+      <Typography
+        mb={1}
+        color={alert ? baseColors.primary : baseColors.textSecondary}
+      >
+        Alcohol Level: <b>{getAlcoholLevelDescription(patron?.alcoholLevel)}</b>
       </Typography>
       <div
         style={{
@@ -111,7 +146,14 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
           height: 20
         }}
       >
-        <div style={{ width: 100, height: '100%', background: gradient }}></div>
+        <div
+          style={{
+            width: `${(patron.alcoholLevel / maxAlcoholLevel) * 100}%`,
+            height: '100%',
+            background: gradient,
+            borderRadius: Metrics.radius
+          }}
+        ></div>
       </div>
       {expanded && (
         <>
@@ -134,7 +176,7 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
                 setDrinkInput(newInputValue)
               }}
               disablePortal
-              id='countries-combo-box'
+              id='drinks-combo-box'
               options={cocktails}
               sx={{ width: '100%' }}
               renderInput={(params) => (
@@ -161,12 +203,27 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
             />
             <Button
               variant='contained'
-              onClick={() =>
-                selectedDrink &&
-                setDrinksHistory([...drinksHistory, { ...selectedDrink }])
-              }
+              onClick={() => {
+                if (selectedDrink) {
+                  setSubmitting(true)
+                  typeof addDrink === 'function' &&
+                    addDrink({
+                      variables: {
+                        drinkId: selectedDrink.id,
+                        patronId: patron?.id
+                      }
+                    })
+                      .then(() => {
+                        setSubmitting(false)
+                      })
+                      .catch(() => {
+                        setSubmitting(false)
+                      })
+                }
+              }}
               style={{
                 marginLeft: Metrics.base * 2,
+                width: 150,
                 background: gradient
               }}
             >
@@ -175,12 +232,19 @@ const PatronIdCard: FC<PatronIdCardProps> = ({ patron, expanded }) => {
               </Typography>
             </Button>
           </div>
-          <Subheading mt={2} mb={3}>
-            Drinks History:
-          </Subheading>
-          {drinksHistory.map((drink) => (
-            <DrinkCard key={drink.id} drinkId={drink.id} />
-          ))}
+          <div style={{ width: '100%', maxHeight: 500, overflowY: 'scroll' }}>
+            <Subheading mt={2} mb={3}>
+              Drinks History:
+            </Subheading>
+            {patron?.drinks?.map((item, index) => (
+              <DrinkCard
+                key={item.drinkId + index}
+                drinkId={item.drinkId}
+                time={item.time}
+                millilitersAlcohol={item.millilitersAlcohol}
+              />
+            ))}
+          </div>
         </>
       )}
     </div>

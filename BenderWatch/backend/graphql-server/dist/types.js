@@ -2,6 +2,18 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const apollo_server_express_1 = require("apollo-server-express");
 const typeDefs = (0, apollo_server_express_1.gql) `
+  type PatronDrink {
+    drinkId: String
+    time: String
+    millilitersAlcohol: Float
+  }
+  type Patron {
+    id: ID
+    name: String
+    weight: Float
+    drinks: [PatronDrink]
+    alcoholLevel: Float
+  }
   type Ingredient {
     name: String
     milliliters: Float
@@ -10,25 +22,16 @@ const typeDefs = (0, apollo_server_express_1.gql) `
     idDrink: String
     strDrink: String
     strDrinkThumb: String
-    ingredients: [Ingredient]
-    millilitersAlcohol: Float
-  }
-  type DrinkListItem {
-    idDrink: String
-    strDrink: String
-    strDrinkThumb: String
   }
   type Query {
-    drinks: [DrinkListItem]
+    drinks: [Drink]
     drink(drinkId: String): Drink
+    patrons: [Patron]
   }
   type Mutation {
-    pairTrade(
-      side: String
-      market_1: String
-      market_2: String
-      size: Float
-    ): Boolean
+    createPatron(name: String, weight: Float): Patron
+    addDrink(patronId: String, drinkId: String): Patron
+    removePatron(patronId: String): Patron
   }
 `;
 exports.default = typeDefs;

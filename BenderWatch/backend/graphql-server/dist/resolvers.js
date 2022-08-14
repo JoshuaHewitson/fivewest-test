@@ -9,32 +9,60 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const Patron_1 = require("./models/Patron");
+const maxAlcoholLevel = 100;
+const getAlcoholLevel = (patron) => {
+    const timeNow = new Date().getTime();
+    let level = 0;
+    for (var i = 0; i < (patron === null || patron === void 0 ? void 0 : patron.drinks.length); i++) {
+        const timeDiffHours = (timeNow - Number(patron.drinks[i].time)) / 3.6e6;
+        const ml = patron.drinks[i].millilitersAlcohol;
+        const mlNow = Math.max(ml - (ml / 3) * timeDiffHours, 0);
+        level += mlNow;
+    }
+    level = (level / Number(patron === null || patron === void 0 ? void 0 : patron.weight)) * 50;
+    console.log({ level });
+    return Math.min(level, maxAlcoholLevel);
+};
 const resolvers = {
     Query: {
         drinks: (_, variables, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
-            const response = yield dataSources.DRINKS_API.getDrinksList();
-            return response;
+            return yield dataSources.DRINKS_API.getDrinksList();
         }),
         drink: (_, { drinkId }, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
-            const response = yield dataSources.DRINKS_API.getDrinkDetails(drinkId);
-            return response;
+            return yield dataSources.DRINKS_API.getDrinkDetails(drinkId);
+        }),
+        patrons: (_, variables, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
+            const patrons = yield Patron_1.Patron.find();
+            return patrons.map((patron) => ({
+                id: patron.id,
+                name: patron.name,
+                weight: patron.weight,
+                drinks: patron.drinks,
+                alcoholLevel: getAlcoholLevel(patron)
+            }));
         })
     },
     Mutation: {
-    // runArbBot2: async (
-    //   _,
-    //   { market1, market2, dollarsAllocated },
-    //   { dataSources }
-    // ) => {
-    //   initiateArbBot2({
-    //     market1,
-    //     market2,
-    //     dollarsAllocated,
-    //     dataSources
-    //   })
-    //   // return response.result
-    //   return true
-    // },
+        createPatron: (_, { name, weight }, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
+            const patron = new Patron_1.Patron({ name, weight });
+            return yield patron.save();
+        }),
+        removePatron: (_, { patronId }, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
+            return yield Patron_1.Patron.findOne({ _id: patronId }).remove().exec();
+        }),
+        addDrink: (_, { patronId, drinkId }, { dataSources }) => __awaiter(void 0, void 0, void 0, function* () {
+            const patron = yield Patron_1.Patron.findOne({ _id: patronId }).exec();
+            const drinkDetails = yield dataSources.DRINKS_API.getDrinkDetails(drinkId);
+            if (patron && drinkDetails) {
+                patron.drinks.push({
+                    drinkId,
+                    time: new Date().getTime().toString(),
+                    millilitersAlcohol: drinkDetails.millilitersAlcohol
+                });
+                return yield patron.save();
+            }
+        })
     }
 };
 exports.default = resolvers;

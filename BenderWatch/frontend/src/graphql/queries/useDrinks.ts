@@ -1,32 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useQuery } from '@apollo/client'
 import gql from 'graphql-tag'
+import { Drink, drinkFragment } from './useDrink'
 
 const queryName = 'drinks'
-const typeName = 'DrinkListItem'
 
-export type DrinkListItem = {
-  id: string
-  label: string
-  thumb: string
-}
-const defaultValue: Array<DrinkListItem> = []
-
-export const drinkListItemFragment = gql`
-  fragment drinkListItemFragment on ${typeName} {
-    id: idDrink
-    label: strDrink
-    thumb: strDrinkThumb
-  }
-`
+const defaultValue: Array<Drink> = []
 
 const QUERY = gql`
   query ${queryName}  {
     ${queryName} {
-      ...drinkListItemFragment
+      ...drinkFragment
     }
   }
-  ${drinkListItemFragment}
+  ${drinkFragment}
 `
 
 interface transformProps {

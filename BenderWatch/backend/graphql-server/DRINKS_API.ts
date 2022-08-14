@@ -91,6 +91,12 @@ class DRINKS_API extends RESTDataSource {
     })
     return data.drinks
   }
+  async getDrink(drinkId: string) {
+    const data = await this.get(`lookup.php`, {
+      i: drinkId
+    })
+    return data.drinks[0]
+  }
   async getDrinkDetails(drinkId: string) {
     const data = await this.get(`lookup.php`, {
       i: drinkId
