@@ -5,7 +5,8 @@ import mongoose from 'mongoose'
 require('dotenv').config()
 
 const startServer = async () => {
-  await mongoose.connect('mongodb://localhost:27017/test')
+  const URL = process.env.DB_URL || 'mongodb://localhost:27017/test'
+  await mongoose.connect(URL)
   startApolloServer(typeDefs, resolvers)
 }
 

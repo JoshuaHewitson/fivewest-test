@@ -18,7 +18,8 @@ const resolvers_1 = __importDefault(require("./resolvers"));
 const mongoose_1 = __importDefault(require("mongoose"));
 require('dotenv').config();
 const startServer = () => __awaiter(void 0, void 0, void 0, function* () {
-    yield mongoose_1.default.connect('mongodb://localhost:27017/test');
+    const URL = process.env.DB_URL || 'mongodb://localhost:27017/test';
+    yield mongoose_1.default.connect(URL);
     (0, apolloServer_1.default)(types_1.default, resolvers_1.default);
 });
 startServer();
