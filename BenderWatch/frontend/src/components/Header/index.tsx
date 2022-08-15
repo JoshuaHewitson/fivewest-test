@@ -4,9 +4,11 @@ import { baseColors, gradient, Metrics } from '../../themes'
 import AddPatronForm from '../AddPatronForm'
 import Typography, { Display } from '../Typography'
 import logo from '../../themes/images/BenderWatch_logo.svg'
+import IndexFundCalculator from '../IndexFundCalculator'
 
 const Header: FC = () => {
   const [addPatronOpen, setAddPatronOpen] = useState(false)
+  const [indexCalculatorOpen, setIndexCalculatorOpen] = useState(false)
   return (
     <>
       <div
@@ -21,18 +23,34 @@ const Header: FC = () => {
         }}
       >
         <img src={logo} alt='logo' style={{ height: 60 }}></img>
-        <Button
-          variant='contained'
-          onClick={() => setAddPatronOpen(true)}
-          style={{
-            background: gradient,
-            height: Metrics.base * 6
-          }}
-        >
-          <Typography color={baseColors.background}>
-            <b>Add Patron</b>
-          </Typography>
-        </Button>
+        <>
+          <div style={{ position: 'fixed', bottom: 20, right: 30 }}>
+            <Button
+              // variant='contained'
+              onClick={() => setIndexCalculatorOpen(true)}
+              style={{
+                // background: gradient,
+                height: Metrics.base * 6
+              }}
+            >
+              <Typography color={baseColors.textSecondary}>
+                <b>Index Fund Calculator</b>
+              </Typography>
+            </Button>
+          </div>
+          <Button
+            variant='contained'
+            onClick={() => setAddPatronOpen(true)}
+            style={{
+              background: gradient,
+              height: Metrics.base * 6
+            }}
+          >
+            <Typography color={baseColors.background}>
+              <b>Add Patron</b>
+            </Typography>
+          </Button>
+        </>
       </div>
       <Dialog
         onClose={() => setAddPatronOpen(false)}
@@ -46,6 +64,21 @@ const Header: FC = () => {
         }}
       >
         <AddPatronForm handleClose={() => setAddPatronOpen(false)} />
+      </Dialog>
+      <Dialog
+        onClose={() => setIndexCalculatorOpen(false)}
+        open={indexCalculatorOpen}
+        fullWidth={true}
+        maxWidth='xs'
+        PaperProps={{
+          style: {
+            backgroundColor: 'transparent'
+          }
+        }}
+      >
+        <IndexFundCalculator
+          handleClose={() => setIndexCalculatorOpen(false)}
+        />
       </Dialog>
     </>
   )

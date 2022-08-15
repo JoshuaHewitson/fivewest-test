@@ -27,7 +27,6 @@ const MainContainer = () => {
     }, refetchInterval)
   }, [])
 
-  console.log('selectedIndex', selectedIndex)
   return (
     <>
       <div

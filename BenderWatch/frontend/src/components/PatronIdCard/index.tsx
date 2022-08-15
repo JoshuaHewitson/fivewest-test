@@ -1,4 +1,4 @@
-import { Button } from '@mui/material'
+import { Button, CircularProgress } from '@mui/material'
 import { FC, useMemo, useState } from 'react'
 import { useAddDrink } from '../../graphql/mutations/useAddDrink'
 import { useRemovePatron } from '../../graphql/mutations/useRemovePatron'
@@ -18,7 +18,6 @@ const ListItem: FC<Drink> = ({ label, thumb }) => {
         marginBottom: Metrics.base * 2,
         display: 'flex',
         alignItems: 'center'
-        // justifyContent: 'space-between'
       }}
     >
       <img
@@ -40,11 +39,11 @@ type OptionComponentProps = {
   option?: any
 }
 
-export const OptionComponent = ({
+export const OptionComponent: FC<OptionComponentProps> = ({
   props,
   selected,
   option
-}: OptionComponentProps) => {
+}) => {
   return (
     <li {...props} style={{ padding: 0 }}>
       <div
@@ -227,9 +226,13 @@ const PatronIdCard: FC<PatronIdCardProps> = ({
                 background: gradient
               }}
             >
-              <Typography color={baseColors.background}>
-                <b>Add Drink</b>
-              </Typography>
+              {submitting ? (
+                <CircularProgress style={{ color: baseColors.background }} />
+              ) : (
+                <Typography color={baseColors.background}>
+                  <b>Add Drink</b>
+                </Typography>
+              )}
             </Button>
           </div>
           <div style={{ width: '100%', maxHeight: 500, overflowY: 'scroll' }}>
