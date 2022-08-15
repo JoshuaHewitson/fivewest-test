@@ -238,10 +238,11 @@ const IndexFundCalculator = ({ handleClose }: { handleClose: Function }) => {
               setInput([...input, { ticker: '', mcap: 5000, price: 10 }])
             }
             style={{
-              background: gradient
+              background: gradient,
+              color: baseColors.background
             }}
           >
-            ADD ROW
+            <b>ADD ROW</b>
           </Button>
         </RowContainer>
       </div>
